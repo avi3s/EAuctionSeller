@@ -8,6 +8,7 @@ import javax.validation.Validator;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import com.eauction.seller.entity.ProductEntity;
 import com.eauction.seller.helper.ProductException;
 import com.eauction.seller.helper.Util;
 import com.eauction.seller.model.ProductModel;
+import com.eauction.seller.repository.BidRepository;
 import com.eauction.seller.repository.ProductRepository;
 import com.eauction.seller.service.AddProductService;
 import com.eauction.seller.service.DeleteProductService;
@@ -37,8 +39,14 @@ public class ProductServiceImpl implements AddProductService,DeleteProductServic
 	private ProductRepository productRepository;
 	
 	@Autowired
+	private BidRepository bidRepository;
+	
+	@Autowired
 	@Lazy
 	private ModelMapper modelMapper;
+	
+	@Value("${product.not.found}")
+	private String productMissing;
 	
 	@Override
 	public Mono<ServerResponse> addProduct(ServerRequest serverRequest) {
@@ -50,8 +58,11 @@ public class ProductServiceImpl implements AddProductService,DeleteProductServic
 	
 	@Override
 	public Mono<ServerResponse> deleteProduct(ServerRequest serverRequest) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		var productId = serverRequest.pathVariable("productId");
+		return productRepository.findByProductId(productId)
+				.flatMap(product -> productRepository.deleteById(productId))
+				.then(ServerResponse.noContent().build());
 	}
 	
 	private void validate(ProductModel productModel) {
