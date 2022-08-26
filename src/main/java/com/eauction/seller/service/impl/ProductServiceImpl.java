@@ -74,6 +74,8 @@ public class ProductServiceImpl implements AddProductService,DeleteProductServic
 	                   .sorted()
 	                   .collect(Collectors.joining(", "));
 	           throw new ProductException(errorMessage);
+	       } else {
+	    	   util.printLog(productModel, "Add Product Incoming Request");
 	       }
 	}
 	
